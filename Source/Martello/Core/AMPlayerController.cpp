@@ -111,34 +111,42 @@ void AMPlayerController::TickActor(float DeltaSeconds, ELevelTick TickType, FAct
 
 	if (APawn* ActorPawn = GetPawn()) 
 	{
-		FVector StartLocation = ActorPawn->GetActorLocation();
 		FRotator StartRotation = ActorPawn->GetActorRotation();
 
+		float PanSpeed = 0;
+		float ScrollSpeed = 0;
+
 		if (b_MoveBack) {
-			StartLocation.X -= ForwardSpeed;
+			PanSpeed -= ForwardSpeed;
 		}
 
 		if (b_MoveForward) {
-			StartLocation.X += ForwardSpeed;
+			PanSpeed += ForwardSpeed;
 		}
 
 		if (b_MoveLeft) {
-			StartLocation.Y -= SideSpeed;
+			ScrollSpeed -= SideSpeed;
 		}
 
 		if (b_MoveRight) {
-			StartLocation.Y += SideSpeed;
+			ScrollSpeed += SideSpeed;
 		}
 
 		if (b_RotateRight) {
-			StartRotation.Yaw -= RotationSpeed;
-		}
-
-		if (b_RotateLeft) {
 			StartRotation.Yaw += RotationSpeed;
 		}
 
-		ActorPawn->SetActorLocation(StartLocation);
+		if (b_RotateLeft) {
+			StartRotation.Yaw -= RotationSpeed;
+		}
+
+		const FVector ForwardVector = ActorPawn->GetActorForwardVector();
+		const FVector LeftRightVector = ActorPawn->GetActorRightVector();
+
+		const FVector PanMovementVector = ForwardVector.GetSafeNormal() * PanSpeed;
+		const FVector ScrollMovementVector = LeftRightVector.GetSafeNormal() * ScrollSpeed;
+
+		ActorPawn->SetActorLocation(ActorPawn->GetActorLocation() + PanMovementVector + ScrollMovementVector);
 		ActorPawn->SetActorRotation(StartRotation);
 	}
 }
